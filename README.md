@@ -14,6 +14,61 @@ A complete decentralized exchange (DEX) with:
 - ✅ Local blockchain deployment
 - ✅ Web interface for testing
 
+## 📸 Screenshots
+
+### Trading Interface
+![DeFi Trading Interface](https://uiwkjvslz0.ufs.sh/f/7LCulCrlhcN5D4bkqriCVGcIHX3PAdrL297s6b0gzYZkxhQW)
+*Complete trading interface with token balances, swap functionality, and fee dashboard*
+
+### MetaMask Integration
+![MetaMask Integration](./screenshots/metamask-tokens.png)
+*TKNA and TKNB tokens displayed in MetaMask wallet*
+
+## 🎬 Demo
+
+### Live Demo Features
+- **Token Minting**: Buy TKNA and TKNB tokens for testing
+- **Real-time Swapping**: Exchange tokens with live price quotes
+- **Fee Tracking**: Monitor collected trading fees
+- **MetaMask Integration**: Full wallet integration with transaction history
+- **Pool Management**: View liquidity pool status
+
+### Quick Demo Steps
+1. **Connect Wallet**: `enhanced-trading-interface.html` → "Connect MetaMask"
+2. **Buy Tokens**: Mint 100 TKNA tokens for testing
+3. **Execute Swap**: Swap 50 TKNA for TKNB (with 0.3% fee)
+4. **View Fees**: Check accumulated fees in dashboard
+5. **Withdraw Fees**: Collect fees as contract owner
+
+## 🏗️ Project Structure
+
+```
+DeFi-Trader/
+├── 📄 contracts/
+│   ├── TokenA.sol           # ERC-20 Token A
+│   ├── TokenB.sol           # ERC-20 Token B
+│   └── TokenSwap.sol        # Main DEX contract
+├── 🧪 test/
+│   └── TokenSwap.test.ts    # Comprehensive test suite
+├── 🚀 scripts/
+│   ├── deploy-local.ts      # Local deployment
+│   ├── deploy-fuji.ts       # Testnet deployment
+│   └── check-balance.ts     # Balance checker
+├── 🌐 Web Interface/
+│   ├── enhanced-trading-interface.html  # Main trading UI
+│   ├── trading-interface-local.html     # Backup UI
+│   └── ethers.min.js                   # Local ethers.js
+├── 📸 screenshots/          # Project screenshots
+├── 📚 Documentation/
+│   ├── README.md            # This file
+│   ├── SCREENSHOT-GUIDE.md  # How to add screenshots
+│   └── LOCAL-TRADING-GUIDE.md # Complete setup guide
+└── ⚙️ Configuration/
+    ├── hardhat.config.ts    # Hardhat configuration
+    ├── package.json         # Dependencies
+    └── .env                 # Environment variables
+```
+
 ## 🧪 Testing Locally (Working Now)
 
 ### 1. Local Hardhat Network
@@ -116,8 +171,41 @@ npx hardhat clean                                   # Clean artifacts
 - ✅ Built a working DEX from scratch
 - ✅ Learned Solidity smart contract development
 - ✅ Mastered Hardhat development environment
-- ✅ Created comprehensive test suite
-- ✅ Integrated with MetaMask
+- ✅ Created comprehensive test suite (19 tests)
+- ✅ Integrated with MetaMask wallet
+- ✅ Built responsive web interface
+- ✅ Local blockchain deployment working
 - ✅ Ready for real blockchain deployment
+- ✅ Complete documentation with screenshots
+- ✅ Professional project structure
 
 **You're now a DeFi developer!** 🚀
+
+## 📋 Quick Reference
+
+| Feature | Status | File |
+|---------|--------|------|
+| Smart Contracts | ✅ Working | `contracts/` |
+| Test Suite | ✅ 19 tests passing | `test/TokenSwap.test.ts` |
+| Local Deployment | ✅ Ready | `scripts/deploy-local.ts` |
+| Trading Interface | ✅ Functional | `enhanced-trading-interface.html` |
+| MetaMask Integration | ✅ Complete | Built-in |
+| Fee Collection | ✅ Working | Contract owner feature |
+| Documentation | ✅ Complete | `README.md` + guides |
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+| Problem | Solution |
+|---------|----------|
+| "ethers is not defined" | Use `trading-interface-local.html` |
+| MetaMask not connecting | Add Hardhat Local network manually |
+| Transactions failing | Check you're on correct network (31337) |
+| No test tokens | Run deployment script first |
+| Can't see tokens in wallet | Click "Add Tokens to Wallet" |
+
+### Need Help?
+- 📖 Check `LOCAL-TRADING-GUIDE.md` for detailed setup
+- 📸 See `SCREENSHOT-GUIDE.md` for visual documentation
+- 🔍 Review test files for contract behavior examples
