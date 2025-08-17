@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 DeFi Trader - Complete Trading Interface</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(4px);
+        }
+        
+        .full-width {
+            grid-column: span 2;
+        }
+        
+        .status {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            border-left: 4px solid #2196F3;
+            background-color: #e3f2fd;
+        }
+        
+        .error {
+            background-color: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+        
+        .success {
+            background-color: #e8f5e8;
+            border-left-color: #4caf50;
+            color: #2e7d32;
+        }
+        
+        .warning {
+            background-color: #fff3e0;
+            border-left-color: #ff9800;
+            color: #e65100;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 8px 0;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .balance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .balance-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .balance-amount {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-top: 10px;
+        }
+        
+        .swap-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .swap-input-group {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .swap-arrow {
+            text-align: center;
+            font-size: 24px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .swap-arrow:hover {
+            transform: rotate(180deg);
+        }
+        
+        .fee-dashboard {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .fee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .fee-item:last-child {
+            border-bottom: none;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .contract-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 4px;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content {
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>🚀 DeFi Trader</h1>
+            <p>Complete Token Trading & Swapping Interface</p>
+        </div>
+
+        <div class="card full-width">
+            <div class="status" id="status">
+                🔌 Connect to MetaMask and local Hardhat network to start trading
+            </div>
+            
+            <div class="contract-info">
+                <h4>📋 Contract Addresses:</h4>
+                <div><strong>TokenA (TKNA):</strong> 0x5FbDB2315678afecb367f032d93F642f64180aa3</div>
+                <div><strong>TokenB (TKNB):</strong> 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512</div>
+                <div><strong>TokenSwap:</strong> 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0</div>
+            </div>
+            
+            <button onclick="connectWallet()">🦊 Connect MetaMask</button>
+            <button onclick="addTokensToWallet()">➕ Add Tokens to Wallet</button>
+            <button onclick="addLocalNetwork()">🌐 Add Local Network to MetaMask</button>
+        </div>
+
+        <div class="grid hidden" id="mainInterface">
+            <!-- Token Balances -->
+            <div class="card">
+                <h3>💰 Your Token Balances</h3>
+                <div class="balance-grid">
+                    <div class="balance-card">
+                        <div>🅰️ TKNA</div>
+                        <div class="balance-amount" id="tknaBalance">0</div>
+                    </div>
+                    <div class="balance-card">
+                        <div>🅱️ TKNB</div>
+                        <div class="balance-amount" id="tknbBalance">0</div>
+                    </div>
+                </div>
+                <button onclick="refreshBalances()">🔄 Refresh Balances</button>
+            </div>
+
+            <!-- Pool Information -->
+            <div class="card">
+                <h3>🏊 Pool Information</h3>
+                <div class="balance-grid">
+                    <div class="balance-card">
+                        <div>Pool TKNA</div>
+                        <div class="balance-amount" id="poolTknaBalance">0</div>
+                    </div>
+                    <div class="balance-card">
+                        <div>Pool TKNB</div>
+                        <div class="balance-amount" id="poolTknbBalance">0</div>
+                    </div>
+                </div>
+                <button onclick="refreshPoolInfo()">🔄 Refresh Pool</button>
+            </div>
+
+            <!-- Token Purchase Section -->
+            <div class="card">
+                <h3>🛒 Buy Tokens (For Testing)</h3>
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab('buyA')">Buy TKNA</button>
+                        <button class="tab-button" onclick="switchTab('buyB')">Buy TKNB</button>
+                    </div>
+                </div>
+                
+                <div id="buyA" class="tab-content">
+                    <input type="number" id="buyAmountA" placeholder="Amount of TKNA to mint" step="0.001">
+                    <button onclick="buyTokenA()">🛒 Get TKNA Tokens</button>
+                </div>
+                
+                <div id="buyB" class="tab-content hidden">
+                    <input type="number" id="buyAmountB" placeholder="Amount of TKNB to mint" step="0.001">
+                    <button onclick="buyTokenB()">🛒 Get TKNB Tokens</button>
+                </div>
+                
+                <div class="status">
+                    <small>💡 In a real DeFi app, you'd buy tokens with ETH or other tokens. For testing, we're minting them directly.</small>
+                </div>
+            </div>
+
+            <!-- Token Swap Section -->
+            <div class="card">
+                <h3>🔄 Token Swap</h3>
+                <div class="swap-container">
+                    <div class="swap-input-group">
+                        <label>From:</label>
+                        <select id="fromToken" onchange="updateToToken()">
+                            <option value="A">🅰️ TKNA</option>
+                            <option value="B">🅱️ TKNB</option>
+                        </select>
+                        <input type="number" id="swapAmount" placeholder="0.0" step="0.001" oninput="getQuoteRealTime()">
+                    </div>
+                    
+                    <div class="swap-arrow" onclick="reverseSwap()">
+                        ⬇️
+                    </div>
+                    
+                    <div class="swap-input-group">
+                        <label>To:</label>
+                        <select id="toToken" disabled>
+                            <option value="B">🅱️ TKNB</option>
+                        </select>
+                        <input type="number" id="expectedAmount" placeholder="You'll receive" readonly>
+                    </div>
+                    
+                    <div id="swapQuote" style="margin: 15px 0; color: white;"></div>
+                    
+                    <button onclick="executeSwap()" id="swapButton" disabled>🚀 Execute Swap</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fee Dashboard -->
+        <div class="card full-width hidden" id="feeDashboard">
+            <div class="fee-dashboard">
+                <h3>💎 Fee Collection Dashboard</h3>
+                <div class="fee-item">
+                    <span><strong>Total Fees Collected (TKNA):</strong></span>
+                    <span id="feesA">0 TKNA</span>
+                </div>
+                <div class="fee-item">
+                    <span><strong>Total Fees Collected (TKNB):</strong></span>
+                    <span id="feesB">0 TKNB</span>
+                </div>
+                <div class="fee-item">
+                    <span><strong>Fee Rate:</strong></span>
+                    <span>0.3% per swap</span>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button onclick="refreshFees()">🔄 Refresh Fees</button>
+                    <button onclick="withdrawFees()" id="withdrawButton">💰 Withdraw Fees (Owner Only)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Contract addresses
+        const TOKEN_A_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+        const TOKEN_B_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+        const SWAP_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+
+        // Enhanced ABIs
+        const ERC20_ABI = [
+            "function balanceOf(address) view returns (uint256)",
+            "function approve(address spender, uint256 amount) returns (bool)",
+            "function symbol() view returns (string)",
+            "function decimals() view returns (uint8)",
+            "function mint(address to, uint256 amount)",
+            "function allowance(address owner, address spender) view returns (uint256)"
+        ];
+
+        const SWAP_ABI = [
+            "function swapAForB(uint256 amount)",
+            "function swapBForA(uint256 amount)",
+            "function getQuoteAToB(uint256 amount) view returns (uint256, uint256)",
+            "function getQuoteBToA(uint256 amount) view returns (uint256, uint256)",
+            "function getPoolBalances() view returns (uint256, uint256)",
+            "function collectedFeesA() view returns (uint256)",
+            "function collectedFeesB() view returns (uint256)",
+            "function withdrawFees()",
+            "function owner() view returns (address)"
+        ];
+
+        let provider, signer, tokenA, tokenB, tokenSwap, userAddress, isOwner = false;
+
+        async function connectWallet() {
+            try {
+                // Check if ethers is loaded
+                if (typeof ethers === 'undefined') {
+                    updateStatus('❌ Ethers.js library not loaded. Please refresh the page and try again.', 'error');
+                    return;
+                }
+
+                if (typeof window.ethereum === 'undefined') {
+                    updateStatus('❌ MetaMask not installed. Please install MetaMask to continue.', 'error');
+                    return;
+                }
+
+                updateStatus('🔄 Connecting to MetaMask...', '');
+
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+
+                const network = await provider.getNetwork();
+                console.log('Connected to network:', network);
+                
+                if (network.chainId !== 31337) {
+                    updateStatus('⚠️ Please switch to local Hardhat network (Chain ID: 31337). Click "Add Local Network" button if you haven\'t added it yet.', 'warning');
+                    return;
+                }
+
+                // Initialize contracts
+                tokenA = new ethers.Contract(TOKEN_A_ADDRESS, ERC20_ABI, signer);
+                tokenB = new ethers.Contract(TOKEN_B_ADDRESS, ERC20_ABI, signer);
+                tokenSwap = new ethers.Contract(SWAP_ADDRESS, SWAP_ABI, signer);
+
+                // Check if user is owner
+                try {
+                    const owner = await tokenSwap.owner();
+                    isOwner = owner.toLowerCase() === userAddress.toLowerCase();
+                } catch (error) {
+                    console.log('Could not check ownership:', error.message);
+                }
+
+                updateStatus(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)} ${isOwner ? '(Owner)' : ''}`, 'success');
+                
+                // Show interface
+                document.getElementById('mainInterface').classList.remove('hidden');
+                document.getElementById('feeDashboard').classList.remove('hidden');
+                
+                // Load initial data
+                refreshBalances();
+                refreshPoolInfo();
+                refreshFees();
+                
+            } catch (error) {
+                updateStatus(`❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function addLocalNetwork() {
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: '0x7A69', // 31337 in hex
+                        chainName: 'Hardhat Local',
+                        nativeCurrency: {
+                            name: 'ETH',
+                            symbol: 'ETH',
+                            decimals: 18
+                        },
+                        rpcUrls: ['http://127.0.0.1:8545'],
+                        blockExplorerUrls: null
+                    }]
+                });
+                updateStatus('✅ Local network added to MetaMask!', 'success');
+            } catch (error) {
+                updateStatus(`❌ Failed to add network: ${error.message}`, 'error');
+            }
+        }
+
+        async function addTokensToWallet() {
+            try {
+                // Add TokenA
+                await window.ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC20',
+                        options: {
+                            address: TOKEN_A_ADDRESS,
+                            symbol: 'TKNA',
+                            decimals: 18,
+                            image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiM0Q0FGNTASCZ8L2NpcmNsZT4KPHR4dCB4PSIxNiIgeT0iMjAiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QTwvdGV4dD4KPC9zdmc+'
+                        },
+                    },
+                });
+
+                // Add TokenB
+                await window.ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC20',
+                        options: {
+                            address: TOKEN_B_ADDRESS,
+                            symbol: 'TKNB',
+                            decimals: 18,
+                            image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNGRjk4MDAiLz4KPHR4dCB4PSIxNiIgeT0iMjAiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QjwvdGV4dD4KPC9zdmc+'
+                        },
+                    },
+                });
+
+                updateStatus('✅ Tokens added to MetaMask! Check your wallet.', 'success');
+            } catch (error) {
+                updateStatus(`❌ Failed to add tokens: ${error.message}`, 'error');
+            }
+        }
+
+        async function refreshBalances() {
+            if (!tokenA || !tokenB) return;
+            
+            try {
+                const [balanceA, balanceB] = await Promise.all([
+                    tokenA.balanceOf(userAddress),
+                    tokenB.balanceOf(userAddress)
+                ]);
+                
+                document.getElementById('tknaBalance').textContent = parseFloat(ethers.utils.formatEther(balanceA)).toFixed(3);
+                document.getElementById('tknbBalance').textContent = parseFloat(ethers.utils.formatEther(balanceB)).toFixed(3);
+            } catch (error) {
+                console.error('Error loading balances:', error);
+            }
+        }
+
+        async function refreshPoolInfo() {
+            if (!tokenSwap) return;
+            
+            try {
+                const [poolBalanceA, poolBalanceB] = await tokenSwap.getPoolBalances();
+                
+                document.getElementById('poolTknaBalance').textContent = parseFloat(ethers.utils.formatEther(poolBalanceA)).toFixed(3);
+                document.getElementById('poolTknbBalance').textContent = parseFloat(ethers.utils.formatEther(poolBalanceB)).toFixed(3);
+            } catch (error) {
+                console.error('Error loading pool info:', error);
+            }
+        }
+
+        async function refreshFees() {
+            if (!tokenSwap) return;
+            
+            try {
+                const [feesA, feesB] = await Promise.all([
+                    tokenSwap.collectedFeesA(),
+                    tokenSwap.collectedFeesB()
+                ]);
+                
+                document.getElementById('feesA').textContent = `${parseFloat(ethers.utils.formatEther(feesA)).toFixed(6)} TKNA`;
+                document.getElementById('feesB').textContent = `${parseFloat(ethers.utils.formatEther(feesB)).toFixed(6)} TKNB`;
+                
+                // Show withdraw button only to owner
+                document.getElementById('withdrawButton').style.display = isOwner ? 'inline-block' : 'none';
+            } catch (error) {
+                console.error('Error loading fees:', error);
+            }
+        }
+
+        async function buyTokenA() {
+            const amount = document.getElementById('buyAmountA').value;
+            if (!amount || amount <= 0) {
+                updateStatus('❌ Please enter a valid amount', 'error');
+                return;
+            }
+            
+            try {
+                updateStatus('🔄 Minting TKNA tokens...', '');
+                const amountWei = ethers.utils.parseEther(amount);
+                const tx = await tokenA.mint(userAddress, amountWei);
+                await tx.wait();
+                
+                updateStatus(`✅ Successfully minted ${amount} TKNA tokens!`, 'success');
+                refreshBalances();
+                document.getElementById('buyAmountA').value = '';
+            } catch (error) {
+                updateStatus(`❌ Failed to mint tokens: ${error.message}`, 'error');
+            }
+        }
+
+        async function buyTokenB() {
+            const amount = document.getElementById('buyAmountB').value;
+            if (!amount || amount <= 0) {
+                updateStatus('❌ Please enter a valid amount', 'error');
+                return;
+            }
+            
+            try {
+                updateStatus('🔄 Minting TKNB tokens...', '');
+                const amountWei = ethers.utils.parseEther(amount);
+                const tx = await tokenB.mint(userAddress, amountWei);
+                await tx.wait();
+                
+                updateStatus(`✅ Successfully minted ${amount} TKNB tokens!`, 'success');
+                refreshBalances();
+                document.getElementById('buyAmountB').value = '';
+            } catch (error) {
+                updateStatus(`❌ Failed to mint tokens: ${error.message}`, 'error');
+            }
+        }
+
+        async function getQuoteRealTime() {
+            const amount = document.getElementById('swapAmount').value;
+            const fromToken = document.getElementById('fromToken').value;
+            
+            if (!amount || amount <= 0) {
+                document.getElementById('expectedAmount').value = '';
+                document.getElementById('swapQuote').innerHTML = '';
+                document.getElementById('swapButton').disabled = true;
+                return;
+            }
+
+            try {
+                const amountWei = ethers.utils.parseEther(amount);
+                let quote, fee;
+
+                if (fromToken === 'A') {
+                    [quote, fee] = await tokenSwap.getQuoteAToB(amountWei);
+                } else {
+                    [quote, fee] = await tokenSwap.getQuoteBToA(amountWei);
+                }
+
+                const quoteFormatted = parseFloat(ethers.utils.formatEther(quote)).toFixed(6);
+                const feeFormatted = parseFloat(ethers.utils.formatEther(fee)).toFixed(6);
+
+                document.getElementById('expectedAmount').value = quoteFormatted;
+                document.getElementById('swapQuote').innerHTML = `
+                    <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
+                        📊 <strong>Swap Details:</strong><br>
+                        You'll receive: <strong>${quoteFormatted} ${fromToken === 'A' ? 'TKNB' : 'TKNA'}</strong><br>
+                        Fee: <strong>${feeFormatted} ${fromToken === 'A' ? 'TKNA' : 'TKNB'}</strong><br>
+                        Rate: 1 ${fromToken === 'A' ? 'TKNA' : 'TKNB'} = ${(parseFloat(quoteFormatted) / (parseFloat(amount) - parseFloat(feeFormatted))).toFixed(4)} ${fromToken === 'A' ? 'TKNB' : 'TKNA'}
+                    </div>
+                `;
+                document.getElementById('swapButton').disabled = false;
+            } catch (error) {
+                document.getElementById('swapQuote').innerHTML = `<div style="color: #ffcdd2;">❌ ${error.message}</div>`;
+                document.getElementById('swapButton').disabled = true;
+            }
+        }
+
+        async function executeSwap() {
+            const amount = document.getElementById('swapAmount').value;
+            const fromToken = document.getElementById('fromToken').value;
+            
+            if (!amount || amount <= 0) {
+                updateStatus('❌ Please enter a valid amount', 'error');
+                return;
+            }
+
+            try {
+                const amountWei = ethers.utils.parseEther(amount);
+                updateStatus('🔄 Executing swap...', '');
+
+                // Check and approve if needed
+                const tokenContract = fromToken === 'A' ? tokenA : tokenB;
+                const currentAllowance = await tokenContract.allowance(userAddress, SWAP_ADDRESS);
+                
+                if (currentAllowance.lt(amountWei)) {
+                    updateStatus('🔄 Approving token spend...', '');
+                    const approveTx = await tokenContract.approve(SWAP_ADDRESS, amountWei);
+                    await approveTx.wait();
+                }
+                
+                updateStatus('🔄 Confirming swap...', '');
+                let swapTx;
+                if (fromToken === 'A') {
+                    swapTx = await tokenSwap.swapAForB(amountWei);
+                } else {
+                    swapTx = await tokenSwap.swapBForA(amountWei);
+                }
+                
+                await swapTx.wait();
+
+                updateStatus('🎉 Swap completed successfully!', 'success');
+                
+                // Clear inputs and refresh data
+                document.getElementById('swapAmount').value = '';
+                document.getElementById('expectedAmount').value = '';
+                document.getElementById('swapQuote').innerHTML = '';
+                document.getElementById('swapButton').disabled = true;
+                
+                refreshBalances();
+                refreshPoolInfo();
+                refreshFees();
+                
+            } catch (error) {
+                updateStatus(`❌ Swap failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function withdrawFees() {
+            if (!isOwner) {
+                updateStatus('❌ Only the contract owner can withdraw fees', 'error');
+                return;
+            }
+            
+            try {
+                updateStatus('🔄 Withdrawing fees...', '');
+                const tx = await tokenSwap.withdrawFees();
+                await tx.wait();
+                
+                updateStatus('✅ Fees withdrawn successfully!', 'success');
+                refreshBalances();
+                refreshFees();
+            } catch (error) {
+                updateStatus(`❌ Failed to withdraw fees: ${error.message}`, 'error');
+            }
+        }
+
+        function updateToToken() {
+            const fromToken = document.getElementById('fromToken').value;
+            const toSelect = document.getElementById('toToken');
+            
+            if (fromToken === 'A') {
+                toSelect.innerHTML = '<option value="B">🅱️ TKNB</option>';
+            } else {
+                toSelect.innerHTML = '<option value="A">🅰️ TKNA</option>';
+            }
+            
+            getQuoteRealTime();
+        }
+
+        function reverseSwap() {
+            const fromSelect = document.getElementById('fromToken');
+            const currentFrom = fromSelect.value;
+            
+            if (currentFrom === 'A') {
+                fromSelect.value = 'B';
+            } else {
+                fromSelect.value = 'A';
+            }
+            
+            updateToToken();
+        }
+
+        function switchTab(tab) {
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            
+            // Hide all tab content
+            document.getElementById('buyA').classList.add('hidden');
+            document.getElementById('buyB').classList.add('hidden');
+            
+            // Show selected tab
+            document.getElementById(tab).classList.remove('hidden');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        function updateStatus(message, type = '') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Auto-refresh data every 30 seconds
+        setInterval(() => {
+            if (tokenA && tokenB && tokenSwap) {
+                refreshBalances();
+                refreshPoolInfo();
+                refreshFees();
+            }
+        }, 30000);
+
+        // Check if ethers library loaded properly
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (typeof ethers === 'undefined') {
+                    updateStatus('❌ Failed to load ethers.js library. Please refresh the page. If the problem persists, check your internet connection.', 'error');
+                } else {
+                    console.log('✅ Ethers.js loaded successfully:', ethers.version);
+                    updateStatus('🔌 Connect to MetaMask and local Hardhat network to start trading', '');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
